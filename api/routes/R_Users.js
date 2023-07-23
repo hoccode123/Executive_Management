@@ -56,27 +56,27 @@ router.post('/created', async (req, res) => {
     const hash = bcrypt.hashSync(Class_Admin.makeid(8), salt);
     const data = await userModels.create({email, password:hash,userCode, fullName,avatar, phone, active, gender, createnew, departmentID, roleID, createByID})
 
-    var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'tothuyit2@gmail.com',
-          pass: 'dtybqszyuqfgvowz'
-        }
-    });
+    // var transporter = nodemailer.createTransport({
+    //     service: 'gmail',
+    //     auth: {
+    //       user: 'tothuyit2@gmail.com',
+    //       pass: 'dtybqszyuqfgvowz'
+    //     }
+    // });
       
-    var mailOptions = {
-        from: 'tothuyit2@gmail.com',
-        to: email,
-        subject: 'Xac nhan va kich koat tai khoan',
-        html: '<a href="http://localhost:3010/api/users/active?id='+data._id+'" target="_blank">Click vào dây</a>'
-    };
+    // var mailOptions = {
+    //     from: 'tothuyit2@gmail.com',
+    //     to: email,
+    //     subject: 'Xac nhan va kich koat tai khoan',
+    //     html: '<a href="http://localhost:3010/api/users/active?id='+data._id+'" target="_blank">Click vào dây</a>'
+    // };
       
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-            response(res, 608)
-            return
-        }
-    });
+    // transporter.sendMail(mailOptions, function(error, info){
+    //     if (error) {
+    //         response(res, 608)
+    //         return
+    //     }
+    // });
 
     response(res, 200, data)
 })
