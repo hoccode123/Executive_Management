@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     phone: {type: String, default: ''},
     avatar: {type: String, default: ''},
     active: {type: Boolean, default: false},
-    gender: {type: String, default: ''},
+    genderID:{type: mongoose.Types.ObjectId, default: null},
     createnew: {type: Boolean, default: true},
     departmentID:{type: mongoose.Types.ObjectId, default: null},
     roleID: {type: mongoose.Types.ObjectId, default: null},

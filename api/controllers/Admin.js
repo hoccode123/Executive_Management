@@ -13,7 +13,6 @@ class Admin {
     constructor(url = '') {
         this.url = url;
     }
-
     
     get_parent_module_name() {
         return this.url.split('/')[2];
@@ -25,7 +24,8 @@ class Admin {
         return this.url.split('/')[4];
     }
 
-    Error(key, field, data=[],min,max) {
+    get_error(key, field, data=[],min,max) {
+        console.log(data);
         let value='';
         switch (key) {
            
@@ -60,7 +60,7 @@ class Admin {
         return {code: key, error: value, data};
     }
     response(res, code, field, data) {
-        res.send(Error(code, field, data))
+        res.send(this.get_error(code, field, data))
     }
     check_login(req, res, next) {
         if(req.cookies.token==undefined){
