@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
     userCode:{type:String, require: true, unique: true},
     fullName: {type: String, require: true},
     email: {type: String, require: true, unique: true},
@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
     updateDate: {type: Date, default: null},
     createByID:{type: mongoose.Types.ObjectId, default: null},
     updateByID:{type: mongoose.Types.ObjectId, default: null},
- 
 })
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('user', schema);

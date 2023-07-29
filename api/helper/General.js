@@ -1,4 +1,4 @@
-const Admin = require('../controllers/Admin')
+const Admin = require('../helper/Admin')
 
 const Gender_Model = require('../schema/department/M_Gender')
 const Role_Model = require('../schema/facts/M_Role')

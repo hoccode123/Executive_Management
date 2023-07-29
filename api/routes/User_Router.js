@@ -1,6 +1,16 @@
 const express = require('express')
-const moment = require('moment')
 const router = express.Router()
+
+const User_Controller = require('../controllers/User_Controller')
+
+router.get('/getList', async (req, res) => {
+    return await User_Controller.getList(req, res)
+})
+
+router.post('/create', async (req, res) => {
+    return await User_Controller.create(req, res)
+})
+
 
 // Gọi model
 // const userModels = require('../models/facts/M_User')
@@ -9,16 +19,16 @@ const router = express.Router()
 // const departmentModel = require('../models/department/M_Department')
 // const positionModels= require('../models/department/M_Position')
 
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 // Gọi bcryptjs
-const bcrypt = require('bcryptjs');
-var salt = bcrypt.genSaltSync(10);
+// const bcrypt = require('bcryptjs');
+// var salt = bcrypt.genSaltSync(10);
 
 // Gọi json web token
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 // khóa bí mật
 
-const secret = '#$#@#dsds';
+// const secret = '#$#@#dsds';
 
 // Gọi class
 // const Admin = require('../controllers/Admin')
@@ -29,69 +39,68 @@ const secret = '#$#@#dsds';
 // const Class_Admin = new Admin();
 
 
-const M_User = require('../models/M_User')
-const Class_User = new M_User()
+// const User_Controller = require('../controllers/User_Controller')
 
-router.get('/getList', async (req, res) => {
-    Class_User.response(res, 200, await Class_User.getList(req, res))
-})
+// router.get('/getList', async (req, res) => {
+//     return await User_Controller.getList(req, res);
+// })
 
 
 // user/getList: userCode, fullName,avatar, email, phone, active, gender, new, departmentID, roleID, createDate, updateDate, createByID, updateByID
-router.post('/created', async (req, res) => {
+// router.post('/created', async (req, res) => {
 
-    const {
-        userCode, 
-        fullName, 
-        email, 
-        phone,
-        departmentID,
-        roleID,
-        genderID 
-    } = req.body
+//     const {
+//         userCode, 
+//         fullName, 
+//         email, 
+//         phone,
+//         departmentID,
+//         roleID,
+//         genderID 
+//     } = req.body
 
-    // gender: nam, nu
-    // role: admin, user, guest
+//     // gender: nam, nu
+//     // role: admin, user, guest
 
-    const check_email_empty = Class_Admin.check_empty(email)
-    if(check_email_empty!='') return check_email_empty
+//     const check_email_empty = Class_Admin.check_empty(email)
+//     if(check_email_empty!='') return check_email_empty
 
-    const check_userCode_empty = Class_Admin.check_empty(userCode)
-    if(check_userCode_empty!='') return check_userCode_empty
+//     const check_userCode_empty = Class_Admin.check_empty(userCode)
+//     if(check_userCode_empty!='') return check_userCode_empty
 
-    const check_fullName_empty = Class_Admin.check_empty(fullName)
-    if(check_fullName_empty!='') return check_fullName_empty
+//     const check_fullName_empty = Class_Admin.check_empty(fullName)
+//     if(check_fullName_empty!='') return check_fullName_empty
 
-    const check_email_format = Class_Admin.check_email_format(email)
-    if(check_email_format!='') return check_email_format
+//     const check_email_format = Class_Admin.check_email_format(email)
+//     if(check_email_format!='') return check_email_format
    
-    const hash = bcrypt.hashSync(Class_Admin.makeid(8), salt);
-    const data = await userModels.create({email, password:hash,userCode, fullName, phone, genderID, createnew, departmentID, roleID})
+//     const hash = bcrypt.hashSync(Class_Admin.makeid(8), salt);
+//     const data = await userModels.create({email, password:hash,userCode, fullName, phone, genderID, createnew, departmentID, roleID})
 
-    // var transporter = nodemailer.createTransport({
-    //     service: 'gmail',
-    //     auth: {
-    //       user: 'tothuyit2@gmail.com',
-    //       pass: 'dtybqszyuqfgvowz'
-    //     }
-    // });
+//     // var transporter = nodemailer.createTransport({
+//     //     service: 'gmail',
+//     //     auth: {
+//     //       user: 'tothuyit2@gmail.com',
+//     //       pass: 'dtybqszyuqfgvowz'
+//     //     }
+//     // });
       
-    // var mailOptions = {
-    //     from: 'tothuyit2@gmail.com',
-    //     to: email,
-    //     subject: 'Xac nhan va kich koat tai khoan',
-    //     html: '<a href="http://localhost:3010/api/users/active?id='+data._id+'" target="_blank">Click vào dây</a>'
-    // };
+//     // var mailOptions = {
+//     //     from: 'tothuyit2@gmail.com',
+//     //     to: email,
+//     //     subject: 'Xac nhan va kich koat tai khoan',
+//     //     html: '<a href="http://localhost:3010/api/users/active?id='+data._id+'" target="_blank">Click vào dây</a>'
+//     // };
       
-    // transporter.sendMail(mailOptions, function(error, info){
-    //     if (error) {
-    //         response(res, 608)
-    //         return
-    //     }
-    // });
+//     // transporter.sendMail(mailOptions, function(error, info){
+//     //     if (error) {
+//     //         response(res, 608)
+//     //         return
+//     //     }
+//     // });
 
-    Class_Admin.response(res, 200, data)
-})
+//     Class_Admin.response(res, 200, data)
+// })
 //user/getList: userCode, fullName, avatar, email, phone, active, gender, new, departmentID, roleID, createDate, updateDate, createByID, updateByID
 // router.get('/list', async (req, res) => {
 //     const {userCode, fullName, avatar, email, phone, active, gender, createnew, departmentID, roleID, createDate, updateDate, createByID, updateByID } = req.body

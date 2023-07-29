@@ -24,11 +24,9 @@ class Admin {
         return this.url.split('/')[4];
     }
 
-    get_error(key, field, data=[],min,max) {
-        console.log(data);
+    get_error(key, field='', data=[],min,max) {
         let value='';
         switch (key) {
-           
             case 608:
                 value = 'Gửi email thất bại';
                 break;
@@ -59,7 +57,7 @@ class Admin {
         }
         return {code: key, error: value, data};
     }
-    response(res, code, field, data) {
+    response(res, code, data, field) {
         res.send(this.get_error(code, field, data))
     }
     check_login(req, res, next) {
@@ -140,12 +138,12 @@ class Admin {
         var decoded = jwt.verify(token, secret);
         return decoded
     }
-    check_empty(value='', field=''){
-        return (value.trim()=='') ? Error(603, field) : '';
+    check_empty(value=''){
+        return (value.trim()=='') ? true : false;
     }
     check_email_format(email){
         var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/; 
-        return (!regex.test(email.trim())) ? Error(604, field) : '';
+        return (!regex.test(email.trim())) ? true : false;
     }
     check_password_format(password){
         var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
@@ -156,6 +154,10 @@ class Admin {
     }
     check_compare(password,re_password){
         return (password.trim() != re_password.trim())? Error(607,'Re_Password'):'';
+    }
+    check_phone_format(phone){
+        var regex = /^(03|05|07|08|09)[0-9]{8}$/; 
+        return (!regex.test(phone.trim())) ? Error(604, field) : '';
     }
   
    // check_token(req, res, next) {
