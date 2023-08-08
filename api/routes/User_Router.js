@@ -6,12 +6,21 @@ const User_Controller = require('../controllers/User_Controller')
 router.get('/getList', async (req, res) => {
     return await User_Controller.getList(req, res)
 })
-
+router.get('/getDetail/:id', async (req, res) => {
+    return await User_Controller.getID(req, res)
+})
 router.post('/create', async (req, res) => {
     return await User_Controller.create(req, res)
 })
-
-
+router.put('/update', async (req, res) => {
+    return await User_Controller.update(req, res)
+})
+router.delete('/delete/:id', async function (req, res) {
+    return await User_Controller.delete(req, res)
+})
+// router.post('/delete/:id', async function (req, res) {
+//   return await User_Controller.delete(req, res)
+// })
 // Gọi model
 // const userModels = require('../models/facts/M_User')
 // const tokenModels = require('../models/facts/M_Token')

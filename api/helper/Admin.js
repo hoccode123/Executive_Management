@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 // khóa bí mật
 //const secret = '#$#@#dsds';
-
+const nodemailer = require('nodemailer');
 class Admin {
 
     expiresIn_default = 60 * 60 * 24;
@@ -24,7 +24,7 @@ class Admin {
         return this.url.split('/')[4];
     }
 
-    get_error(key, field='', data=[],min,max) {
+    getError(key, field='', data=[],min,max) {
         let value='';
         switch (key) {
             case 608:
@@ -58,9 +58,9 @@ class Admin {
         return {code: key, error: value, data};
     }
     response(res, code, data, field) {
-        res.send(this.get_error(code, field, data))
+        res.send(this.getError(code, field, data))
     }
-    check_login(req, res, next) {
+    checkLogin(req, res, next) {
         if(req.cookies.token==undefined){
             res.redirect('/login.html')
         }else{
@@ -131,31 +131,31 @@ class Admin {
     //         });
         
     //     }
-    sign_token(data, secret=secret??secret_default, expiresIn=expiresIn??expiresIn_default){
+    signToken(data, secret=secret??secret_default, expiresIn=expiresIn??expiresIn_default){
         return jwt.sign(data, secret, { expiresIn });
     }
-    verify_token(token, secret=secret??secret_default){
+    verifyToken(token, secret=secret??secret_default){
         var decoded = jwt.verify(token, secret);
         return decoded
     }
-    check_empty(value=''){
+    checkEmpty(value=''){
         return (value.trim()=='') ? true : false;
     }
-    check_email_format(email){
+    checkEmailFormat(email){
         var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/; 
         return (!regex.test(email.trim())) ? true : false;
     }
-    check_password_format(password){
+    checkPasswordFormat(password){
         var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
         return (!(regex.test(password.trim())))? Error(604, 'Password'):'';
     }
-    check_password_distance(password, min=min??min_default, max=max??max_default){
+    checkPasswordDistance(password, min=min??min_default, max=max??max_default){
         return (password.trim().length < min || password.trim().length > max)? Error(606, 'Password', [], min, max):'';
     }
-    check_compare(password,re_password){
+    checkCompare(password,re_password){
         return (password.trim() != re_password.trim())? Error(607,'Re_Password'):'';
     }
-    check_phone_format(phone){
+    checkPhoneFormat(phone){
         var regex = /^(03|05|07|08|09)[0-9]{8}$/; 
         return (!regex.test(phone.trim())) ? Error(604, field) : '';
     }
@@ -187,7 +187,7 @@ class Admin {
 
         // });
     //}
-    check_role(req, res, next) {
+    checkRole(req, res, next) {
         var request = require('request');
         fs.readFile(req.cookies.username + '.txt', function (err, data) {
             if (err) res.send({ kq: 0, msg: "Đọc file thất bại!" });
@@ -206,30 +206,46 @@ class Admin {
         });
         //res.send(req.cookies.login.token);
     }
-
-    send_email(service='', email_send='', pass_send='', email_receive='', subject='', html=''){
-        var transporter = nodemailer.createTransport({
-            service:  service,
-            auth: {
-              user: email_send,
-              pass:  pass_send
-            }
-        });
-
-        var mailOptions = {
-            from: email_send,
-            to: email_receive,
-            subject: subject,
-            html:  html
-        };
+     // var transporter = nodemailer.createTransport({
+        //     service: 'gmail',
+        //     auth: {
+        //       user: 'tothuyit2@gmail.com',
+        //       pass: 'dtybqszyuqfgvowz'
+        //     }
+        // });
           
-        transporter.sendMail(mailOptions, function(error, info){
-            
-            if (error) {
-                this.response(res, 608)
-                return
+        // var mailOptions = {
+        //     from: 'tothuyit2@gmail.com',
+        //     to: email,
+        //     subject: 'Xac nhan va kich koat tai khoan',
+        //     html: '<a href="http://localhost:3010/api/users/active?id='+data._id+'" target="_blank">Click vào dây</a>'
+        // };
+          
+        // transporter.sendMail(mailOptions, function(error, info){
+        //     if (error) {
+        //         return this.response(res, 608)
+        //     }
+        // });
+    async sendEmail(id='', email=''){
+        var transporter = nodemailer.createTransport({
+            service: process.env.EMAIL_SERVICE,
+            auth: {
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASS 
             }
         });
+        var mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: 'Xac nhan va kich koat tai khoan',
+            html: '<a href="'+process.env.URL+'api/users/active?id='+id+'" target="_blank">Click vào dây</a>'
+        };
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                console.log(error);
+            }
+        });
+        // return await transporter.sendMail(mailOptions);
     }
     makeid(length) {
         let result = '';
