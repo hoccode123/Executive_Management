@@ -1,12 +1,23 @@
+const { text } = require('express')
 const Admin = require('../helper/Admin')
 
-const Gender_Model = require('../schema/department/M_Gender')
-const Role_Model = require('../schema/facts/M_Role')
+
+const Role_Model = require('../schema/facts/Role_Schema')
 
 class General extends Admin{
-    async getGender(){
-        return await Gender_Model.find({}).exec()
+    constructor(url){
+        super(url)
     }
+
+    // async getList(filter={},model=''){
+    //     return await model.find(filter).exec()
+    // }
+
+    // async getIDSchema(text,model){
+    //    // console.log(text);
+    //     const data = await this.getList({name:text},model)
+    //     return data[0]._id
+    // }
 
     async getRole(){
         return await Role_Model.find({}).exec()

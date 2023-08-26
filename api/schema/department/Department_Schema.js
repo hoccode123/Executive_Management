@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const departmentSchema = new mongoose.Schema({
-    department_name: {type: String, require: true},
+    name: {type: String, require: true},
     code:{type: String, require: true, unique: true},
     avatar: {type: String, default: ''},
     parentID: {type: mongoose.Types.ObjectId, default: null},
