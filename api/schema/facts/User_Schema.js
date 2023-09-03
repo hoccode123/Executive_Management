@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-    userCode:{type:String, default: null},
+    userCode: {type:String, default: null},
     fullName: {type: String, default: ''},
     email: {type: String, require: true, unique: true},
     phone: {type: String, require: true, unique: true},
@@ -10,8 +10,9 @@ const schema = new mongoose.Schema({
     active: {type: Boolean, default: false},
     genderID:{type: mongoose.Types.ObjectId, default: null},
     createnew: {type: Boolean, default: true},
-    departmentID:{type: mongoose.Types.ObjectId, default: null},
-    roleID: {type: mongoose.Types.ObjectId, default: null},
+    trash:{type: Boolean, default: true},
+    // department: Array, // [id, id, id, id, id, id],
+    role: Array, // [value, value]
     createDate: {type: Date, default: Date.now()},
     updateDate: {type: Date, default: null},
     createByID:{type: mongoose.Types.ObjectId, default: null},

@@ -102,25 +102,24 @@ class User_Controller extends Admin{
         // } = req.query
         const data = await User_Model.getList()
         //console.log(data);
-
-
         return this.response(res, 200, data);
     }
 
     async create(req, res){
-        
+        // console.log(await this.checkToken());
+        // get token
+         //this.verifyToken((await this.checkToken()['data']));
+         const userLogin = await this.decoded(req)
         const {
-            fullname,
+            fullName,
             email,
             phone,
             gender,
-            department,
-            role,
-            createByID
+            role
         } = req.body
 
         // check data
-        if(this.checkEmpty(fullname)) return this.response(res, 603, '', 'fullname')
+        if(this.checkEmpty(fullName)) return this.response(res, 603, '', 'fullname')
         if(this.checkEmpty(email)) return this.response(res, 603, '', 'email')
         if(this.checkEmailFormat(email)) return this.response(res, 604, '', 'email')
         if(this.checkPhoneFormat(phone)) return this.response(res, 604, '', 'phone')
@@ -128,74 +127,60 @@ class User_Controller extends Admin{
         if(check_email_exist.length != 0) return this.response(res, 605, '', 'email')
         const check_phone_exist = await User_Model.getField({phone})
         if(check_phone_exist.length != 0) return this.response(res, 605, '', 'phone')
-
-        const checkGender = await this.checkModelField(gender,Gender_Schema, this.genderList())
+        const checkGender = await this.checkModelField(gender, this.genderList())
         if(!checkGender) return this.response(res, 404,'', 'Giới tính')
-       //console.log(checkGender);
-        const checkDepartment = await this.checkModelField(department, Department_Schema, this.departmentList())
-        if(!checkDepartment) return this.response(res, 404,'', 'Phòng ban')
-        const checkRole = await this.checkModelField(role, Role_Schema, this.roleList())
-        if(!checkRole) return this.response(res, 610,'', '')
+        const checkRole = await this.checkModelField(role, this.roleList());
+        if(!checkRole) return this.response(res, 610,'', '');
         //console.log(checkDepartment);
         const data = await User_Model.create({
-            fullname,
+            fullName,
             email,
             phone,
-            genderID: checkGender[0]._id ,
-            departmentID: checkDepartment[0]._id ,
-            roleID: checkRole[0]._id,
+            gender,
+            role,
             password: bcrypt.hashSync(this.makeid(8), salt),
             avatar: res.locals.avatar,
-            //createByID:
+            createByID: userLogin.data._id
         })
-
+        //console.log(userLogin.data._id); 
        if(data) await this.sendEmail(data._id, email)
-       
         return this.response(res, 200, data);
     }
     
     async update(req,res){
-
+        const userLogin = await this.decoded(req)
         const {
-            fullname,
-            phone,
-            genderID,
-            departmentID,
-            roleID
-        } = req.body
 
+            fullName,
+            phone,
+            gender,
+            //departmentID,
+            role
+        } = req.body
 
         if(this.checkEmpty(req.params.id)) return this.response(res, 603, '', 'id')
         if(!this.checkObjectId(req.params.id)) return this.response(res, 604, '', 'id')
-       
-        if(this.checkEmpty(fullname)) return this.response(res, 603, '', 'fullname')
-        //if(this.checkEmpty(req.body.email)) return this.response(res, 603, '', 'email')
-       // if(this.checkEmailFormat(req.body.email)) return this.response(res, 604, '', 'email')
+        if(this.checkEmpty(fullName)) return this.response(res, 603, '', 'fullname')
         if(this.checkPhoneFormat(phone)) return this.response(res, 604, '', 'phone')
-        //if(!this.checkObjectId(genderID)) return this.response(res, 604, '', 'genderID')
-        //if(!this.checkObjectId(departmentID)) return this.response(res, 604, '', 'departmentID')
-        // const check_email_exist = await User_Model.getField({email: req.body.email})
-        // if(check_email_exist.length != 0) return this.response(res, 605, '', 'email')
-
         const check_phone_exist = await User_Model.getField({phone, _id: {$ne: new mongoose.Types.ObjectId(req.params.id)}})
         if(check_phone_exist.length != 0) return this.response(res, 605, '', 'phone')
-
-
+        const checkGender = await this.checkModelField(gender, this.genderList())
+        if(!checkGender) return this.response(res, 404,'', 'Giới tính')
+        const checkRole = await this.checkModelField(role, this.roleList());
+        if(!checkRole) return this.response(res, 610,'', '');
         if (req.body['password']!= undefined && req.body['password'].trim() !='') req.body['password'] = bcrypt.hashSync(req.body['password'], salt)
         req.body['updateDate'] = new Date()
+        req.body['updateByID'] = userLogin.data._id
         req.body['avatar'] = res.locals.avatar
        // console.log(req.body);
 
        const oldData = await User_Model.getField({_id: new mongoose.Types.ObjectId(req.params.id)})
        const avatar = oldData[0]['avatar']
-
         await User_Model.update({_id: new mongoose.Types.ObjectId(req.params.id)}, req.body)
-
         // delete old file
         if(req.body['avatar']!=undefined && req.body['avatar'] != ''){
             fs.unlinkSync('public/uploads/user/' + avatar)
         }
-
         const data = await User_Model.getField({_id: new mongoose.Types.ObjectId(req.params.id)})
         return this.response(res, 200, data);
 
@@ -228,26 +213,22 @@ class User_Controller extends Admin{
         const check_id_exist = await User_Model.getField({_id: {$ne: new mongoose.Types.ObjectId(id)}})
         if(check_id_exist.length = 0) return this.response(res, 609, '', 'id')
         // 1 check status have exist
-       
         if(status==undefined) return this.response(res, 404, '', 'status')
         // 2. check status empty
         if(this.checkEmpty(status)) return this.response(res, 603, '', 'status')
         // 3. check status format : ['on', 'off']
         //console.log(status.toLowerCase());
         if((status.toLowerCase()!='on' && status.toLowerCase()!='off')) return this.response(res, 604, '', 'status')
-        
         await User_Model.update({_id: new mongoose.Types.ObjectId(id)}, {active: status.toLowerCase()=='on'?true:false}) 
         const data = await User_Model.getField({_id: new mongoose.Types.ObjectId(id)}, '_id email active createDate createByID')
-
         return this.response(res,200, data)
     }
 
     async delete(req, res){
-        //const id = req.params // ?id=
-       //console.log(_id)
-       //; if(User_Model.getID(_id)=='') return this.response(res, 404)
+      
+       const checkRole = await this.checkModelField(role, this.roleList());
+       if(!checkRole) return this.response(res, 610,'', '');
         const data = await User_Model.delete(req.params.id)
-
         return this.response(res,200, data)
     }
 }

@@ -12,7 +12,8 @@ const Token_Schema = require('../schema/facts/Token_Schema')
 const Role_Schema = require('../schema/facts/Role_Schema')
 const bcrypt = require('bcryptjs');
 
-const Gender_Model = require('../schema/department/Gender_Schema')
+const Gender_Model = require('../schema/department/Gender_Schema');
+const { log } = require('console');
 
 class Admin {
 
@@ -102,6 +103,8 @@ class Admin {
         return this.url.split('/')[4];
     }
 
+    ///role(){ return ['admin', 'user', 'guest'] }
+
     getError(key, field = '', data = [], min, max) {
         let value = '';
        
@@ -146,8 +149,8 @@ class Admin {
         }
         return { code: key, error: value, data };
     }
-    response(res, code, data, field) {
-        res.send(this.getError(code, field, data))
+    response(res, code, data, field, min , max) {
+        res.send(this.getError(code, field, data, min , max))
     }
     // checkLogin(req, res, next) {
     //     if (req.cookies.token == undefined) {
@@ -238,8 +241,10 @@ class Admin {
         var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
         return (!(regex.test(password.trim()))) ? Error(604, 'Password') : '';
     }
-    checkPasswordDistance(password, min = min ?? min_default, max = max ?? max_default) {
-        return (password.trim().length < min || password.trim().length > max) ? Error(606, 'Password', [], min, max) : '';
+    checkDistance(password, min = min ?? min_default, max = max ?? max_default) {
+        //console.log(password);
+        if(password != undefined) {return (password.trim().length < min || password.trim().length > max) ? true : false;}
+        else{ return false}
     }
     checkCompare(password, re_password) {
         return (password.trim() != re_password.trim()) ? Error(607, 'Re_Password') : '';
@@ -252,6 +257,25 @@ class Admin {
         var ObjectId = require('mongoose').Types.ObjectId;
         return ObjectId.isValid(id)
     }
+    //Xem lại
+    checkObjectIdArray(arrayId) {
+
+        var ObjectId = require('mongoose').Types.ObjectId;
+       // var arraynew=[]
+        //console.log(array);
+        if (arrayId!=undefined){
+            for (let index = 0; index < arrayId.length; index++) {
+                const element = arrayId[index];
+                //arraynew[index]=element.trim().toLocaleUpperCase()
+                return ObjectId.isValid(element)==true ? ObjectId.isValid(element) : false   
+            } 
+        }else
+        {
+            return true
+        }
+        
+    }
+    //list lấy từ DB chưa viết
     checkBoolen(text) {
         var ObjectId = require('mongoose').Types.Boolean;
         return ObjectId.isValid(id)
@@ -265,52 +289,75 @@ class Admin {
     roleList(){
         return ["ADMIN", "USER", "GUEST"];
     }
-    // async getList(filter={},model=''){
-    //     return await model.find(filter).exec()
-    // }
-    // async departmentList(filter={},model=''){
-    //     const propertyNames  = Object.keys(await this.getList(filter={},model=''))
-    //     //console.log(propertyNames)
-    //     return propertyNames
-    // }
-    async checkModelField(name, schema, list) {
-        return (name!=undefined && list.includes(name.trim().toLocaleUpperCase())) ? await schema.find({name: name.trim().toLocaleUpperCase()}) : false
+   
+    async checkModelField(name, list) {
+        return (name!=undefined && list.includes(name.trim().toLocaleUpperCase())) ? name.trim().toLocaleUpperCase() : false
+    }
+    //Xem lạil
+    async checkModelFieldArray(array, list) {
+       // var arraynew=[]
+        //console.log(array);
+        if (array!=undefined){
+            for (let index = 0; index < array.length; index++) {
+           
+                const element = array[index];
+                //arraynew[index]=element.trim().toLocaleUpperCase()
+                return (list.includes(element.trim().toLocaleUpperCase())) ? true : false   
+            } 
+        }else
+        {
+            return true
+        }
+       
+    }
+    async decoded(req){
+        if(req.headers.authorization == undefined){
+            return this.response(res, 603, '', 'Token')
+        }
+        const token = req.headers.authorization.split(' ')[1]
+        
+        const checkExist = await Token_Schema.find({token, status: true}).exec()
+        
+        if(checkExist[0].length == 0){
+            return this.response(res, 404, '', 'Token')
+        }
+        
+        return jwt.verify(token, this.secret_default);
     }
     async checkToken(req, res, next) {
         if(req.headers.authorization == undefined){
             return this.response(res, 603, '', 'Token')
         }
         const token = req.headers.authorization.split(' ')[1]
-
+        
         const checkExist = await Token_Schema.find({token, status: true}).exec()
-
+        
         if(checkExist[0].length == 0){
             return this.response(res, 404, '', 'Token')
         }
         const checkToken = jwt.verify(token, this.secret_default);
-       // console.log(checkToken);
 
         return ( typeof checkToken != 'string') ? next() : this.response(res, 700, '', checkToken)
     }
-    checkRole(req, res, next) {
-        var request = require('request');
-        fs.readFile(req.cookies.username + '.txt', function (err, data) {
-            if (err) res.send({ kq: 0, msg: "Đọc file thất bại!" });
-            request(
-                {
-                    method: 'get',
-                    url: 'http://localhost:3001/api/generals/checkrole/' + JSON.parse(data.toString()).token,
-                    json: true
-                }, function (error, response, body) {
-                    if (body.data == 'admin' || body.data == 'user') {
-                        next()
-                    } else {
-                        res.send({ kq: 0, msg: 'Bạn không đủ vai trò để vào link này.' })
-                    }
-                });
-        });
-        //res.send(req.cookies.login.token);
-    }
+    // checkRole(req, res, next) {
+    //     var request = require('request');
+    //     fs.readFile(req.cookies.username + '.txt', function (err, data) {
+    //         if (err) res.send({ kq: 0, msg: "Đọc file thất bại!" });
+    //         request(
+    //             {
+    //                 method: 'get',
+    //                 url: 'http://localhost:3001/api/generals/checkrole/' + JSON.parse(data.toString()).token,
+    //                 json: true
+    //             }, function (error, response, body) {
+    //                 if (body.data == 'admin' || body.data == 'user') {
+    //                     next()
+    //                 } else {
+    //                     res.send({ kq: 0, msg: 'Bạn không đủ vai trò để vào link này.' })
+    //                 }
+    //             });
+    //     });
+    //     //res.send(req.cookies.login.token);
+    // }
     // var transporter = nodemailer.createTransport({
     //     service: 'gmail',
     //     auth: {
@@ -381,7 +428,7 @@ class Admin {
 
         if (result) {
             const token = jwt.sign(
-                { data: { _id: data[0]['_id'], email: data[0]['email'] } },
+                { data: { _id: data[0]['_id'], email: data[0]['email'],role: data[0]['role'] } },
                 this.secret_default,
                 { expiresIn: this.expiresIn_default }
             );
